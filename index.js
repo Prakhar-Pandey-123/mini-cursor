@@ -57,7 +57,7 @@ async function buildWebsite(query){
     });
     while(true){
     const result=await ai.models.generateContent({
-        model:"gemini-3.1-flash-lite",
+        model:"gemini-3.5-flash-lite",
         contents:history,
         config:{
             systemInstruction:`you are a website builder which will create frontend part of website using terminal .you will give shell/terminal command one by one and out tool will execute it.
