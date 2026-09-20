@@ -5,7 +5,7 @@ import util from "util"
 import os from "os"
 import readlineSync from "readline-sync"
 
-const platform=os.platform;//tells the platform 
+const platform=os.platform();//tells the platform 
 
 // child_process → lets your Node.js program run commands on the computer's terminal.
 // util → is a collection of helper utilities provided by Node.js
@@ -57,7 +57,7 @@ async function buildWebsite(query){
     });
     while(true){
     const result=await ai.models.generateContent({
-        model:"gemini-3.5-flash",
+        model:"gemini-3.1-flash-lite",
         contents:history,
         config:{
             systemInstruction:`you are a website builder which will create frontend part of website using terminal .you will give shell/terminal command one by one and out tool will execute it.
@@ -86,26 +86,30 @@ async function buildWebsite(query){
     })
 
     if(result.functionCalls && result.functionCalls.length>0){
-        const functionCall=result.functionCalls[0];
-        const {name,args} =functionCall;
-        const toolResponse = executeCommand(args);//calling the tool
 
-        const functionResponsePart={
-            name:functionCall.name,
-            response:{
-                result:toolResponse
-            }
-        }
-        // push the llm tool call in history
+        // push the llm's tool-call turn (contains ALL function calls it made)
         history.push(result.candidates[0].content);
 
-        // push the tool response in history
+        const responseParts=[];
+        for(const functionCall of result.functionCalls){
+            const {name,args} =functionCall;
+            const toolResponse = await executeCommand(args);//calling the tool
+            responseParts.push({
+                functionResponse:{
+                    name:name,
+                    response:{
+                        result:toolResponse
+                    }
+                }
+            })
+        }
+       
+        
+        // push the all tool response in history
 
         history.push({
             role:"user",
-            parts:[{
-                functionResponse:functionResponsePart
-            }]
+            parts:responseParts
         })
 
     }
@@ -115,6 +119,7 @@ async function buildWebsite(query){
             role:"model",
             parts:[{text:result.text}]
         })
+        break;
     }
 }
 
