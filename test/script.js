@@ -7,10 +7,10 @@ const result = document.getElementById("result");
 button.addEventListener("click", calculate);
 
 function calculate() {
-    let first = num1.value;
-    let second = num2.value;
+    let first = parseFloat(num1.value);
+    let second = parseFloat(num2.value);
 
-    if (first === "" || second === "") {
+    if (isNaN(first) || isNaN(second)) {
         result.textContent = "Please enter both numbers";
         return;
     }
@@ -27,6 +27,10 @@ function calculate() {
         answer = first * second;
     }
     else if (operation.value === "divide") {
+        if (second === 0) {
+            result.textContent = "Result: Cannot divide by zero";
+            return;
+        }
         answer = first / second;
     }
 
